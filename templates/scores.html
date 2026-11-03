@@ -1,0 +1,23 @@
+{% extends "base.html" %}{% block title %}Enter scores{% endblock %}
+{% block body %}
+<h1>Enter scores</h1>
+{% if not subjects %}<p class="empty">No subjects are assigned to your account. Ask an administrator to assign them.</p>{% else %}
+<form class="filters" method="get" data-auto>
+  <label>Exam <select name="exam"><option value="">Choose</option>{% for e in exams %}<option value="{{ e.id }}"{% if exam == e.id %} selected{% endif %}>{{ e.name }} {{ e.academic_year }}</option>{% endfor %}</select></label>
+  <label>Class <select name="class"><option value="">Choose</option>{% for c in classes %}<option value="{{ c.id }}"{% if cls == c.id %} selected{% endif %}>{{ c.name }}</option>{% endfor %}</select></label>
+  <label>Subject <select name="subject"><option value="">Choose</option>{% for s in subjects %}<option value="{{ s.id }}"{% if sub == s.id %} selected{% endif %}>{{ s.name }}</option>{% endfor %}</select></label>
+</form>
+{% if rows %}
+<form method="post">
+  <input type="hidden" name="csrf" value="{{ csrf() }}"><input type="hidden" name="exam" value="{{ exam }}"><input type="hidden" name="class" value="{{ cls }}"><input type="hidden" name="subject" value="{{ sub }}">
+  <table><tr><th>Student</th><th>Admission no.</th><th class="num">CA (0 to 40)</th><th class="num">Exam (0 to 60)</th></tr>
+  {% for r in rows %}<tr><td>{{ r.name }}</td><td>{{ r.admission_no }}</td>
+    <td class="num"><input class="score" type="number" step="0.5" min="0" max="40" name="ca_{{ r.id }}" value="{{ r.ca_score if r.ca_score is not none }}" aria-label="CA score for {{ r.name }}"></td>
+    <td class="num"><input class="score" type="number" step="0.5" min="0" max="60" name="ex_{{ r.id }}" value="{{ r.exam_score if r.exam_score is not none }}" aria-label="Exam score for {{ r.name }}"></td></tr>{% endfor %}</table>
+  <p><button class="primary">Save scores</button></p>
+</form>
+{% elif exam and cls and sub %}<p class="empty">This class has no students yet.</p>
+{% else %}<p class="empty">Choose an exam, a class and a subject to open the score sheet.</p>{% endif %}
+{% endif %}
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='app.js') }}"></script>{% endblock %}

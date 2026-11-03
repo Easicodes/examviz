@@ -1,0 +1,19 @@
+{% extends "base.html" %}{% block title %}Interventions{% endblock %}
+{% block body %}
+<h1>Interventions</h1>
+<form class="filters" method="get" data-auto>
+  <label>Status <select name="status"><option value="">All</option>{% for s in IV_STATUS %}<option value="{{ s }}"{% if status == s %} selected{% endif %}>{{ s|capitalize }}</option>{% endfor %}</select></label>
+</form>
+{% if rows %}
+<table><tr><th>Student</th><th>Class</th><th>Support</th><th>Flagged at</th><th>Started</th><th>By</th><th>Status</th></tr>
+{% for r in rows %}<tr>
+  <td><a href="{{ url_for('student', sid=r.sid) }}">{{ r.name }}</a></td><td>{{ r.cls }}</td>
+  <td>{{ r.intervention_type }}{% if r.description %}<br><small>{{ r.description }}</small>{% endif %}</td>
+  <td>{{ r.exam }}</td><td>{{ r.start_date }}{% if r.end_date %}<br><small>ended {{ r.end_date }}</small>{% endif %}</td><td>{{ r.who or 'n/a' }}</td>
+  <td><form method="post" action="{{ url_for('intervention_status', iid=r.id) }}" class="inline" data-auto>
+    <input type="hidden" name="csrf" value="{{ csrf() }}"><input type="hidden" name="back" value="{{ request.full_path.rstrip('?') }}">
+    <select name="status" aria-label="Status for {{ r.name }}">{% for s in IV_STATUS %}<option value="{{ s }}"{% if r.status == s %} selected{% endif %}>{{ s|capitalize }}</option>{% endfor %}</select></form></td>
+</tr>{% endfor %}</table>
+{% else %}<p class="empty">No interventions yet. Open At-risk students and choose Plan support on an alert.</p>{% endif %}
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='app.js') }}"></script>{% endblock %}

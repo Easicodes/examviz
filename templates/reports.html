@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% block title %}Reports{% endblock %}
+{% block body %}
+<h1>Reports</h1>
+<form class="filters" method="get" data-auto>
+  <label>Exam <select name="exam">{% for e in exams %}<option value="{{ e.id }}"{% if e.id == exam %} selected{% endif %}>{{ e.name }} {{ e.academic_year }}</option>{% endfor %}</select></label>
+</form>
+<ul class="links">
+  <li><a href="{{ url_for('report_print', exam=exam) }}">Printable summary</a> with the gender comparison and the boys who need support. Use your browser's Print, then Save as PDF.</li>
+  <li><a href="{{ url_for('report_csv', kind='at-risk', exam=exam) }}">At-risk list (CSV)</a> opens in Excel.</li>
+  <li><a href="{{ url_for('report_csv', kind='results', exam=exam) }}">Full results (CSV)</a> with CA, exam, total and grade for every student and subject.</li>
+  <li><a href="{{ url_for('report_csv', kind='gender-summary', exam=exam) }}">Gender comparison by subject (CSV)</a></li>
+</ul>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='app.js') }}"></script>{% endblock %}

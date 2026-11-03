@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}ExamViz{% endblock %} - ExamViz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,700&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body data-page="{% block page %}{% endblock %}">
+{% if user %}
+<aside class="rail">
+  <a class="brand" href="{{ url_for('index') }}">ExamViz</a>
+  <nav aria-label="Main">
+    {% for ep, label, roles in NAV %}{% if user.role in roles %}
+    <a href="{{ url_for(ep) }}"{% if request.endpoint == ep %} aria-current="page"{% endif %}>{{ label }}</a>
+    {% endif %}{% endfor %}
+  </nav>
+  <form method="post" action="{{ url_for('logout') }}" class="account">
+    <input type="hidden" name="csrf" value="{{ csrf() }}">
+    <span>{{ user.username }}, {{ user.role }}</span>
+    <a href="{{ url_for('password') }}">Change password</a>
+    <button>Log out</button>
+  </form>
+</aside>
+{% endif %}
+<main{% if user %} class="with-rail"{% endif %}>
+{% for cat, msg in get_flashed_messages(with_categories=true) %}<p class="flash {{ cat }}" role="status">{{ msg }}</p>{% endfor %}
+{% block body %}{% endblock %}
+</main>
+{% block scripts %}{% endblock %}
+</body>
+</html>

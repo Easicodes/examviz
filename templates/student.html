@@ -1,0 +1,33 @@
+{% extends "base.html" %}{% block title %}{{ s.first_name }} {{ s.last_name }}{% endblock %}{% block page %}student{% endblock %}
+{% block body %}
+<h1>{{ s.first_name }} {{ s.last_name }}</h1>
+<dl class="facts">
+  <div><dt>Admission number</dt><dd>{{ s.admission_no }}</dd></div>
+  <div><dt>Class</dt><dd>{{ s.cls }}</dd></div>
+  <div><dt>Gender</dt><dd>{{ 'Boy' if s.gender == 'M' else 'Girl' }}</dd></div>
+  {% if s.parent %}<div><dt>Parent</dt><dd>{{ s.parent }}{% if s.parent_phone %}, {{ s.parent_phone }}{% endif %}</dd></div>{% endif %}
+</dl>
+<script type="application/json" id="data">{{ {'trend': trend, 'scores': scores, 'gender': s.gender}|tojson }}</script>
+{% if not trend %}<p class="empty">No results have been entered for this student yet.</p>{% else %}
+<div class="grid2">
+  <figure><figcaption>Average score in each exam, against the class</figcaption><div class="chart"><canvas id="c-trend" role="img" aria-label="Student average by exam compared with class average"></canvas></div></figure>
+  <figure><figcaption>{{ last_exam }}: score in each subject, against the class</figcaption><div class="chart"><canvas id="c-scores" role="img" aria-label="Student score by subject compared with class average"></canvas></div></figure>
+</div>
+<h2>{{ last_exam }} results</h2>
+<table><tr><th>Subject</th><th class="num">CA /40</th><th class="num">Exam /60</th><th class="num">Total</th><th>Grade</th><th class="num">Class average</th></tr>
+{% for r in scores %}<tr><td>{{ r.name }}</td><td class="num">{{ r.ca }}</td><td class="num">{{ r.exam }}</td><td class="num">{{ r.total }}</td><td>{{ r.grade }}</td><td class="num">{{ r.cls }}</td></tr>{% endfor %}</table>
+{% endif %}
+<h2>Attendance</h2>
+{% if attendance %}<table><tr><th>Exam</th><th class="num">Days present</th><th class="num">Days open</th><th class="num">Rate</th></tr>
+{% for a in attendance %}<tr><td>{{ a.name }}</td><td class="num">{{ a.days_present }}</td><td class="num">{{ a.days_open }}</td><td class="num">{{ (100 * a.days_present / a.days_open)|round(0)|int }}%</td></tr>{% endfor %}</table>
+{% else %}<p class="empty">No attendance has been recorded yet.</p>{% endif %}
+<h2>Alerts</h2>
+{% if alerts %}<table><tr><th>Exam</th><th>Alert</th><th>Details</th><th>Status</th></tr>
+{% for a in alerts %}<tr class="sev-{{ a.alert_type|lower }}"><td>{{ a.exam }}</td><td>{{ LABEL[a.alert_type] }}</td><td>{{ a.notes }}</td><td>{{ a.status }}</td></tr>{% endfor %}</table>
+{% else %}<p class="empty">No alerts. This student is not flagged.</p>{% endif %}
+<h2>Interventions</h2>
+{% if interventions %}<table><tr><th>Support</th><th>Status</th><th>Started</th><th class="num">Average when flagged</th><th class="num">Latest average</th><th class="num">Change</th></tr>
+{% for i in interventions %}<tr><td>{{ i.intervention_type }}{% if i.description %}<br><small>{{ i.description }}</small>{% endif %}</td><td>{{ i.status }}</td><td>{{ i.start_date }}</td><td class="num">{{ i.before if i.before is not none else 'n/a' }}</td><td class="num">{{ i.now if i.now is not none else 'n/a' }}</td><td class="num">{% if i.change is not none %}{{ '%+.1f'|format(i.change) }}{% else %}n/a{% endif %}</td></tr>{% endfor %}</table>
+{% else %}<p class="empty">No support has been planned.</p>{% endif %}
+{% endblock %}
+{% block scripts %}<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script><script src="{{ url_for('static', filename='app.js') }}"></script>{% endblock %}

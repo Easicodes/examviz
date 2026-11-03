@@ -1,0 +1,43 @@
+{% extends "base.html" %}{% block title %}At-risk students{% endblock %}
+{% block body %}
+<h1>At-risk students</h1>
+<p class="lede">A student is flagged when their average is below {{ thresholds[0] }}, their average fell by {{ thresholds[1] }} points or more since the last exam, or attendance is below {{ thresholds[2] }}%.</p>
+<form class="filters" method="get" data-auto>
+  <label>Exam <select name="exam">{% for e in exams %}<option value="{{ e.id }}"{% if e.id == exam %} selected{% endif %}>{{ e.name }} {{ e.academic_year }}</option>{% endfor %}</select></label>
+  <label>Class <select name="class"><option value="">All classes</option>{% for c in classes %}<option value="{{ c.id }}"{% if cls == c.id %} selected{% endif %}>{{ c.name }}</option>{% endfor %}</select></label>
+  <label>Students <select name="gender"><option value="M"{% if gender == 'M' %} selected{% endif %}>Boys</option><option value="F"{% if gender == 'F' %} selected{% endif %}>Girls</option><option value="all"{% if gender == 'all' %} selected{% endif %}>Everyone</option></select></label>
+  <label>Alert status <select name="status">{% for s in ('open', 'acknowledged', 'resolved', 'all') %}<option value="{{ s }}"{% if status == s %} selected{% endif %}>{{ s|capitalize }}</option>{% endfor %}</select></label>
+</form>
+<form method="post" action="{{ url_for('risk_detect') }}" class="inline">
+  <input type="hidden" name="csrf" value="{{ csrf() }}"><input type="hidden" name="exam" value="{{ exam }}">
+  <button class="primary">Check this exam for new alerts</button>
+</form>
+{% if rows %}
+<table class="risk"><tr><th>Student</th><th>Class</th><th>Alert</th><th>Details</th><th>Status</th><th>Action</th></tr>
+{% for r in rows %}
+<tr class="sev-{{ r.alert_type|lower }}">
+  <td><a href="{{ url_for('student', sid=r.sid) }}">{{ r.name }}</a><br><small>{{ r.admission_no }}</small></td>
+  <td>{{ r.cls }}</td><td>{{ LABEL[r.alert_type] }}</td><td>{{ r.notes }}</td>
+  <td>{{ r.status }}{% if r.active_iv %}<br><small>{{ r.active_iv }} support plan{{ 's' if r.active_iv != 1 }} running</small>{% endif %}</td>
+  <td>
+    <details><summary>Plan support</summary>
+      <form method="post" action="{{ url_for('intervention_new') }}" class="stack">
+        <input type="hidden" name="csrf" value="{{ csrf() }}"><input type="hidden" name="alert_id" value="{{ r.id }}">
+        <input type="hidden" name="back" value="{{ request.full_path.rstrip('?') }}">
+        <label>Support <input name="type" value="{{ SUGGEST[r.alert_type][0] }}" required maxlength="120"></label>
+        <label>Notes <input name="description" value="{{ SUGGEST[r.alert_type][1] }}" maxlength="500"></label>
+        <label>Start date <input type="date" name="start_date" value="{{ today }}"></label>
+        <button class="primary">Save plan</button>
+      </form>
+    </details>
+    {% for st in ('acknowledged', 'resolved') %}{% if r.status != st %}
+    <form method="post" action="{{ url_for('alert_status', aid=r.id) }}" class="inline">
+      <input type="hidden" name="csrf" value="{{ csrf() }}"><input type="hidden" name="status" value="{{ st }}">
+      <input type="hidden" name="back" value="{{ request.full_path.rstrip('?') }}"><button>{{ 'Acknowledge' if st == 'acknowledged' else 'Mark resolved' }}</button>
+    </form>{% endif %}{% endfor %}
+  </td>
+</tr>
+{% endfor %}</table>
+{% else %}<p class="empty">No alerts match these filters. Use "Check this exam for new alerts" after new scores are entered.</p>{% endif %}
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='app.js') }}"></script>{% endblock %}

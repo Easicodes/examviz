@@ -1,0 +1,8 @@
+{% extends "base.html" %}{% block title %}My children{% endblock %}
+{% block body %}
+<h1>My children</h1>
+{% if kids %}
+<table><tr><th>Name</th><th>Class</th><th class="num">{{ latest.name if latest else 'Latest' }} average</th><th class="num">Open alerts</th></tr>
+{% for k in kids %}<tr><td><a href="{{ url_for('student', sid=k.id) }}">{{ k.name }}</a></td><td>{{ k.cls }}</td><td class="num">{{ k.latest|round(1) if k.latest is not none else 'n/a' }}</td><td class="num">{{ k.open_alerts }}</td></tr>{% endfor %}</table>
+{% else %}<p class="empty">No child is linked to this account. Ask the school office to link your account.</p>{% endif %}
+{% endblock %}

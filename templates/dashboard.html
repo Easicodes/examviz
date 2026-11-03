@@ -1,0 +1,21 @@
+{% extends "base.html" %}{% block title %}Dashboard{% endblock %}{% block page %}dashboard{% endblock %}
+{% block body %}
+<h1 id="insight" class="insight">Loading results...</h1>
+<form class="filters">
+  <label>Exam <select id="exam">{% for e in exams %}<option value="{{ e.id }}"{% if latest and e.id == latest.id %} selected{% endif %}>{{ e.name }} {{ e.academic_year }}</option>{% endfor %}</select></label>
+  <label>Class <select id="class"><option value="">All classes</option>{% for c in classes %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}</select></label>
+  <label>Subject <select id="subject"><option value="">All subjects</option>{% for s in subjects %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}</select></label>
+</form>
+<dl class="stats" id="stats"></dl>
+<div class="grid2">
+  <figure><figcaption>Average score by subject. Click a bar to filter the page to that subject.</figcaption><div class="chart"><canvas id="c-subjects" role="img" aria-label="Average score by subject for boys and girls"></canvas></div></figure>
+  <figure><figcaption>Average score in each exam</figcaption><div class="chart"><canvas id="c-trend" role="img" aria-label="Average score by exam for boys and girls"></canvas></div></figure>
+  <figure><figcaption>Share of results at each grade, in percent</figcaption><div class="chart"><canvas id="c-grades" role="img" aria-label="Grade distribution for boys and girls"></canvas></div></figure>
+  <figure><figcaption>Students with open alerts. Click a slice to see them.</figcaption><div class="chart"><canvas id="c-risk" role="img" aria-label="Students with open alerts by gender"></canvas></div></figure>
+</div>
+<div class="grid2">
+  <section><h2>Top ten students</h2><table id="t-top"></table></section>
+  <section><h2>Class ranking</h2><table id="t-classes"></table></section>
+</div>
+{% endblock %}
+{% block scripts %}<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script><script src="{{ url_for('static', filename='app.js') }}"></script>{% endblock %}

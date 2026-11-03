@@ -1,0 +1,22 @@
+{% extends "base.html" %}{% block title %}Import data{% endblock %}
+{% block body %}
+<h1>Import data from a CSV file</h1>
+<p class="lede">Rows that fail validation are skipped and listed below, so one typo never blocks the whole file. Importing the same row twice updates it.</p>
+<form method="post" enctype="multipart/form-data" class="stack narrow">
+  <input type="hidden" name="csrf" value="{{ csrf() }}">
+  <label>What are you importing? <select name="kind">
+    {% for k, v in kinds.items() %}<option value="{{ k }}">{{ k|capitalize }}</option>{% endfor %}</select></label>
+  <label>CSV file, up to 2 MB <input type="file" name="file" accept=".csv,text/csv" required></label>
+  <button class="primary">Import file</button>
+</form>
+{% if result %}
+<h2>Result</h2>
+<p><strong>{{ result.ok }}</strong> row{{ 's' if result.ok != 1 }} imported, <strong>{{ result.errs|length + result.more }}</strong> skipped.</p>
+{% if result.errs %}<ul class="errors">{% for e in result.errs %}<li>{{ e }}</li>{% endfor %}{% if result.more %}<li>and {{ result.more }} more</li>{% endif %}</ul>{% endif %}
+{% endif %}
+<h2>Column names</h2>
+<table><tr><th>File</th><th>Required columns</th><th>Notes</th></tr>
+<tr><td>students</td><td>admission_no, first_name, last_name, gender, class_name</td><td>Optional: academic_year, date_of_birth, parent_name, parent_phone. Gender is M or F. Administrators only.</td></tr>
+<tr><td>scores</td><td>admission_no, subject_code, exam_name, ca_score, exam_score</td><td>CA is out of 40, exam out of 60. Teachers can import only their own subjects.</td></tr>
+<tr><td>attendance</td><td>admission_no, exam_name, days_present, days_open</td><td>One row per student per exam.</td></tr></table>
+{% endblock %}

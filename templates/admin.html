@@ -1,0 +1,49 @@
+{% extends "base.html" %}{% block title %}Administration{% endblock %}
+{% block body %}
+<h1>Administration</h1>
+<div class="grid2">
+<section><h2>Add a user</h2>
+<form method="post" action="{{ url_for('admin_add', kind='user') }}" class="stack">
+  <input type="hidden" name="csrf" value="{{ csrf() }}">
+  <label>Username <input name="username" required minlength="3"></label>
+  <label>Password, at least 8 characters <input name="password" type="password" required minlength="8" autocomplete="new-password"></label>
+  <label>Role <select name="role"><option>teacher</option><option>counselor</option><option>parent</option><option>student</option><option>admin</option></select></label>
+  <label>Linked record: teacher email, or the child's admission number for parents and students <input name="link"></label>
+  <button class="primary">Add user</button></form></section>
+<section><h2>Add a teacher</h2>
+<form method="post" action="{{ url_for('admin_add', kind='teacher') }}" class="stack">
+  <input type="hidden" name="csrf" value="{{ csrf() }}">
+  <label>First name <input name="first_name" required></label><label>Last name <input name="last_name" required></label>
+  <label>Email <input name="email" type="email" required></label>
+  <label>Subject codes they teach, separated by commas <input name="subjects" placeholder="MTH, PHY"></label>
+  <button class="primary">Add teacher</button></form></section>
+<section><h2>Add a subject</h2>
+<form method="post" action="{{ url_for('admin_add', kind='subject') }}" class="stack">
+  <input type="hidden" name="csrf" value="{{ csrf() }}">
+  <label>Name <input name="name" required></label><label>Code <input name="code" required maxlength="8"></label>
+  <button class="primary">Add subject</button></form></section>
+<section><h2>Add a class</h2>
+<form method="post" action="{{ url_for('admin_add', kind='class') }}" class="stack">
+  <input type="hidden" name="csrf" value="{{ csrf() }}">
+  <label>Name <input name="name" required placeholder="SS1A"></label><label>Grade level <input name="grade_level" placeholder="SS1"></label>
+  <label>Academic year <input name="academic_year" required placeholder="2025/2026"></label>
+  <button class="primary">Add class</button></form></section>
+<section><h2>Add an exam</h2>
+<form method="post" action="{{ url_for('admin_add', kind='exam') }}" class="stack">
+  <input type="hidden" name="csrf" value="{{ csrf() }}">
+  <label>Name <input name="name" required placeholder="First Term"></label>
+  <label>Term <select name="term"><option>1</option><option>2</option><option>3</option></select></label>
+  <label>Academic year <input name="academic_year" required placeholder="2025/2026"></label>
+  <label>Exam date <input type="date" name="exam_date"></label>
+  <button class="primary">Add exam</button></form></section>
+</div>
+<h2>Users</h2>
+<table><tr><th>Username</th><th>Role</th><th>Last sign-in</th><th>Status</th><th></th></tr>
+{% for u in users %}<tr><td>{{ u.username }}</td><td>{{ u.role }}</td><td>{{ u.last_login or 'never' }}</td><td>{{ 'Active' if u.active else 'Deactivated' }}</td>
+<td><form method="post" action="{{ url_for('admin_toggle', uid=u.id) }}" class="inline"{% if u.active %} data-confirm="Deactivate {{ u.username }}?"{% endif %}><input type="hidden" name="csrf" value="{{ csrf() }}"><button>{{ 'Deactivate' if u.active else 'Reactivate' }}</button></form></td></tr>{% endfor %}</table>
+<h2>Teachers</h2>
+<table><tr><th>Name</th><th>Email</th><th>Subjects</th></tr>{% for t in teachers %}<tr><td>{{ t.first_name }} {{ t.last_name }}</td><td>{{ t.email }}</td><td>{{ t.subjects or 'none' }}</td></tr>{% endfor %}</table>
+<h2>Recent activity</h2>
+<table><tr><th>When</th><th>Who</th><th>What</th></tr>{% for l in log %}<tr><td>{{ l.at }}</td><td>{{ l.username or 'n/a' }}</td><td>{{ l.action }} {{ l.detail or '' }}</td></tr>{% endfor %}</table>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='app.js') }}"></script>{% endblock %}
